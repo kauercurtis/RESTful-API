@@ -27,12 +27,11 @@
 
 ```json
 {
-	"userID": int,
+	"id": int,
 	"starRating": int,
 	"dollarRating": int,
 	"writtenReview": string (optional),
 	"links": {
-		"user": "/users/:userID",
 		"business": "/businesses/:id"
 	}
 }
@@ -79,14 +78,15 @@ Request Body:
 	]
 }
 ```
-Response Body: -
+Response Body:
+```json
+{"links": {"business": /businesses/:id}}
+```
 
 Request: 'POST /businesses/{id}/reviews'
 Request Body:
 ```json
 {
-        "userID": (enter what ever your user ID is),
-	"businessID": (ID of the business),
 	"starRating": 2,
         "dollarRating": 4,
         "writtenReview": "The vibes are foul and the food rancid"
@@ -97,9 +97,9 @@ Response Body: -
 Request: 'POST /businesses/:id/photos'
 Request Body:
 ```json
-	"userID": int,
 	"businessID": int,
 	"caption": string,
+	"url": string
 ```
 
 ### API PATCH Operations
