@@ -9,6 +9,16 @@ function checkContentType(req, res, next) {
 	}
 }
 
+function checkBodySize(requestBody, requiredSize) {
+	const bodyLength = Object.keys(requestBody).length;
+	if ((bodyLength < requiredSize) || (bodyLength > requiredSize)) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
 function checkSubCategories(subCategories) {
 	if ((subCategories != null) && (subCategories.length > 0)) {
 		return true;
@@ -19,7 +29,7 @@ function checkSubCategories(subCategories) {
 }
 
 function checkBusiness(req, res, next) {
-	if (req.body.name && req.body.streetAddress && req.body.city && req.body.state && req.body.zip && req.body.phone && req.body.category && checkSubCategories(req.body.subCategories) {
+	if (checkBodySize(req.body, 8) && req.body.name && req.body.streetAddress && req.body.city && req.body.state && req.body.zip && req.body.phone && req.body.category && checkSubCategories(req.body.subCategories) {
 		next();
 	} 
 	else {

@@ -17,6 +17,24 @@ app.get("/", (req, res, next) => {
 	res.status(200).send();
 });
 
+app.get("/businesses", (req, res) => {
+	res.status(200).send(businesses);
+}); 
+
+app.get("/businesses/:id/reviews/:reviewid", (req, res) => {
+	const businessID = req.params.id;
+	const reviewID = req.params.reviewid; 
+	console.log(`Validating GET request to /businesses/${businessID}/reviews/${reviewID}`);
+	const reviewEvaluated = businesses[businessID]["reviews"][reviewID];
+	if ((businesses[businessID] != null) && reviewEvaluated != null)) {
+		console.log("GET request accepted");
+		res.status(200).send(reviewEvaluated);
+	}
+	else {
+		res.status(404).send({"error": "business or review not found"});
+	}
+});
+
 app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) => {
 	const newBusiness = JSON.stringify(req.body);
 	console.log(`Adding to /businesses: ${newBusiness}`);

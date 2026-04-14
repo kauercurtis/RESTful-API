@@ -38,25 +38,12 @@
 
 ```
 
-### User JSON Scheme
-
-```json
-{
-	"userID, int,
-	"reviews": string []
-	"photos": []
-}
-```
-
 ### Photo JSON Scheme
 
 ```json
-	"businessID": int,
-	"caption": string,
-	"links": {
-		"user": "/users/:userID",
-		"business": "/businesses/:id"
-	}
+	"id": int,
+	"caption": string
+	"url": string
 ```
 
 ### API POST Operations
@@ -92,7 +79,10 @@ Request Body:
         "writtenReview": "The vibes are foul and the food rancid"
 }
 ```
-Response Body: - 
+Response Body:
+```json
+{"links": {"review": /businesses/:businessID/reviews/:reviewID
+```
 
 Request: 'POST /businesses/:id/photos'
 Request Body:
@@ -100,6 +90,10 @@ Request Body:
 	"businessID": int,
 	"caption": string,
 	"url": string
+```
+Response Body:
+```json
+{"links": {"photo": "/businesses/:businessID/photos/:photoID"}}
 ```
 
 ### API PATCH Operations
@@ -137,7 +131,7 @@ Response Body:
 }
 ```
 
-Request: 'GET /users/{userID}/reviews'
+Request: 'GET /businesses/:businessID/reviews/:reviewID'
 Request Body: - 
 Response Body:
 ```json
