@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const { checkContentType, checkBusiness, checkReview, checkPhoto } = require('./middleware');
+const { checkContentType, checkBusiness, checkReview, checkPhoto, checkPatch } = require('./middleware');
 const { generateUniqueId } = require('./hash');
 
 const port = 8086;
@@ -13,7 +13,7 @@ app.listen(port, () => {
 	console.log(`========= Server is listening on port ${port} =========`);
 });
 
-app.patch("/business/:id", (req, res, next) => {
+app.patch("/businesses/:id", checkContentType, checkPatch, (req, res, next) => {
 	const businessID = req.params.id;
 	console.log(`Validating PATCH request to /businesses/${businessID}`);
 	const businessEvaluated = businesses[businessID];
@@ -22,8 +22,91 @@ app.patch("/business/:id", (req, res, next) => {
 		const key = req.body.path.slice(1);
 		const newValue = req.body.value;
 		businesses[businessID][key] = newValue;
+		res.status(204).send({"links": {"business": `/businesses/${businessID}`}});
+	}
+	else {
+		res.status(404).send({"error": "business not found"});
 	}
 });
+
+app.patch("/businesses/:id/reviews/:reviewid", checkContentType, checkPatch, (req, res, next) => {
+	const businessID = req.params.id;
+	const reviewID = req.params.reviewid;
+	console.log(`Validating PATCH request to /businesses/${businessID}/reviews/${reviewID}`);
+	const reviewEvaluated = businesses[businessID]["reviews"][reviewID];
+	if ((businesses[businessID] != null) && (reviewEvaluated != null)) {
+		console.log("PATCH request accepted");
+		const key = req.body.path.slice(1);
+		const newValue = req.body.value;
+		businesses[businessID][key] = newValue;
+		res.status(204).send({"links": {"review": `businesses/${businessID}/reviews/${reviewID}`}});
+	}
+	else {
+		res.status(404).send({"errror": "business or review not found"});
+	}
+});
+
+app.patch("/businesses/:id/photos/:photoid", checkContentType, checkPatch, (req, res, next) => {
+	const businessID = req.params.id;
+	const photoID = req.params.photoid;
+	console.log(`Validating PATCH request to /businesses/${businessID}/photos/${photoID}`);
+	const photoEvaluated = businesses[businessID]["photos"][reviewID];
+	if ((businesses[businessID] != null) && (photoEvaluated != null)) {
+		console.log("PATCH request accepted");
+		const key = req.body.path.slice(1);
+		const newValue = req.body.value;
+		businesses[businessID][key] = newValue;
+		res.status(204).send({"links": {"photo": `businesses/${businessID}/photos/${photoID}`}});
+	}
+	else {
+		res.status(404).send({"error": "business or photo not found"});
+	}
+});
+
+app.delete("/businesses/:id", (req, res) => {
+	const businessID = req.params.id;
+	console.log(`Validating DELETE request to /businesses/${businessID}`);
+	const businessEvaluated = businesses[businessID];
+	if (businessEvaluated != null) {
+		console.log("DELETE request accepted");
+		businesses.delete(businessID);
+		res.status(204).send();
+	}
+	else {
+		res.status(404).send({"error": "business not found"});
+	}
+});
+
+app.delete("/businesses/:id/reviews/:reviewid", (req, res) => {
+        const businessID = req.params.id;
+        const reviewID = req.params.reviewid;
+        console.log(`Validating DELETE request to /businesses/${businessID}/reviews/${reviewID}`);
+        const reviewEvaluated = businesses[businessID]["reviews"][reviewID];
+        if ((businesses[businessID] != null) && (reviewEvaluated != null)) {
+                console.log("DELETE request accepted");
+                businesses[businessID]["reviews"].splice(reviewID, reviewID);
+		res.status(204).send();
+        }
+        else {
+                res.status(404).send({"errror": "business or review not found"});
+        }
+
+});
+
+app.delete("businesses/:id/photos/:photoid", (req, res) => {
+	const businessID = req.params.id;
+	const photoID = req.params.photoid;
+	console.log(`Validating DELETE request to /businesses/${businessID}/photos/${photoID}`);
+	const photoEvaluated = businesses[businessID]["photos][photoID];
+	if ((businesses[businessID] != null) && (reviewEvaluated != null)) {
+		console.log("DELETE request accepted");
+		businesses[businessID]["photos"].splice(photoID, photoID);
+		res.status(204).send();
+	}
+	else {
+		res.status(404).send({"error": "business or photo not found"});
+	}
+}
 
 app.get("/", (req, res, next) => {
 	res.status(200).send();
@@ -77,7 +160,7 @@ app.get("/businesses/:id/reviews/:reviewid", (req, res) => {
 	const reviewID = req.params.reviewid; 
 	console.log(`Validating GET request to /businesses/${businessID}/reviews/${reviewID}`);
 	const reviewEvaluated = businesses[businessID]["reviews"][reviewID];
-	if ((businesses[businessID] != null) && reviewEvaluated != null)) {
+	if ((businesses[businessID] != null) && (reviewEvaluated != null)) {
 		console.log("GET request accepted");
 		res.status(200).send(reviewEvaluated);
 	}
@@ -91,7 +174,7 @@ app.get("/businesses/:id/photos/:photoid", (req, res) => {
 	const photoID = req.params.photoid;
 	console.log(`Validating GET request to /businesses/${businessID}/photos/${photoID}`);
 	const photoEvaluated = businesses[businessID]["photos"][photoID];
-	if ((businesses[businessID != null) && photoEvaluated != null)) {
+	if ((businesses[businessID != null) && (photoEvaluated != null)) {
 		console.log("GET request accepted");
 		res.status(200).send(photoEvaluated);
 	}
@@ -101,7 +184,7 @@ app.get("/businesses/:id/photos/:photoid", (req, res) => {
 });
 
 app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) => {
-	const newBusiness = JSON.stringify(req.body);
+	let newBusiness = JSON.stringify(req.body);
 	console.log(`Adding to /businesses: ${newBusiness}`);
 	console.log('Generating new id');
 	const id = await generateUniqueId(req.body);
@@ -118,12 +201,13 @@ app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) 
 app.post("/businesses/:id/reviews", checkContentType, checkReview, (req, res, next) => {
 	const businessID = req.params.id;
 	if (businesses[businessID] != null) {
-		const newReview = JSON.stringify(req.body);
+		let newReview = JSON.stringify(req.body);
 		console.log(`Adding to /businesses/${businessID}/reviews: ${newReview}`);
 		console.log('Generating new id');
 		const id = businesses[businessID]["reviews"].length
 		console.log(`Id generated: ${id}`);
 		newReview.id = id;
+		newReview.links = {"business": `/businesses/${businessID}`};
 		businesses[businessID]["reviews"][id] = newReview;
 		res.status(201).send({"links": {"review": `businesses/${businessID}/reviews/${id}`}});
 	}
@@ -135,12 +219,13 @@ app.post("/businesses/:id/reviews", checkContentType, checkReview, (req, res, ne
 app.post("/businesses/:id/photos",checkContentType, checkPhoto, (req, res, next) => {
 	const businessID = req.params.id;
 	if (businesses[businessID] != null) {
-		const newPhoto = JSON.stringify(req.body);
+		let newPhoto = JSON.stringify(req.body);
 		console.log(`Adding to /businesses/${businessID}/photos: ${newPhoto}`);
 		console.log('Generating new id');
 		const id = businesses[businessID]["photos"].length
 		console.log(`Id generated: ${id}`);
 		newPhoto.id = id;
+		newPhoto.links = {"business": `/businesses/${businessID}`};
 		businesses[businessID]["photos"][id] = newPhoto;
 		res.status(201).send({"links": {"photo": `businesses/${businessID}/photos/${id}`}});
 	}

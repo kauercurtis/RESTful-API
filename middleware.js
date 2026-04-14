@@ -1,6 +1,9 @@
 const express = require('express');
 
 const BUSINESS_KEYS = ["name", "streetAddress", "city", "state", "zip", "phone", "category", "subCategories", "website", "email"];
+const REVIEW_KEYS = ["starRating", "dollarRating", "writtenReview"];
+const PHOTO_KEYS = ["caption", "url"];
+const PATCH_KEYS = ["op", "path", "value"];
 
 function checkContentType(req, res, next) {
 	if (req.get('Content-Type') != "application/json") {
@@ -40,30 +43,39 @@ function checkSubCategories(subCategories) {
 	}
 }
 
+function checkPatch(req, res, next) {
+	if (checkBodySize(req.body, 3, 3) && checkBodyContent(req.body, PATCH_KEYS) && req.body.op && req.body.path && req.body.value) {
+		next();
+	}
+	else {
+		res.status(400.send({"error": "required key(s) mismatch"});
+	}
+}
+
 function checkBusiness(req, res, next) {
 	if (checkBodySize(req.body, 10, 8) && checkBodyContent(req.body, BUSINESS_KEYS) && req.body.name && req.body.streetAddress && req.body.city && req.body.state && req.body.zip && req.body.phone && req.body.category && checkSubCategories(req.body.subCategories) {
 		next();
 	} 
 	else {
-		res.status(400).send({"error": "missing required key(s)"});
+		res.status(400).send({"error": "required key(s) mismatch"});
 	}
 }
 
 function checkReview(req, res, next) {
-	if (checkBodySize(req.body, 3, 2) && req.body.starRating && req.body.dollarRating) {
+	if (checkBodySize(req.body, 3, 2) && checkBodyContent(req.body, REVIEW_KEYS) && req.body.starRating && req.body.dollarRating) {
 		next();
 	}
 	else {
-		res.status(400).send({"error": "missing required key(s)"});
+		res.status(400).send({"error": "required key(s) mismatch"});
 	}
 }
 
 function checkPhoto(req, res, next) {
-	if (checkBodySize(req.body, 2, 0) && req.body.url && req.body.caption) {
+	if (checkBodySize(req.body, 2, 1) && checkBodyContent(req.body, PHOTO_KEYS) && req.body.url && req.body.caption) {
 		next();
 	}
 	else {
-		res.status(400).send({"error": "missing required key(s)"});
+		res.status(400).send({"error": "required key(s) mismatch"});
 	}
 }
 
@@ -71,5 +83,6 @@ module.exports = {
 	checkContentType,
 	checkBusiness,
 	checkReview,
-	checkPhoto
+	checkPhoto,
+	checkPatch
 }
