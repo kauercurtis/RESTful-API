@@ -13,12 +13,37 @@ app.listen(port, () => {
 	console.log(`========= Server is listening on port ${port} =========`);
 });
 
+app.patch("/business/:id", (req, res, next) => {
+	const businessID = req.params.id;
+	console.log(`Validating PATCH request to /businesses/${businessID}`);
+	const businessEvaluated = businesses[businessID];
+	if (businessEvaluated != null) {
+		console.log("PATCH request accepted");
+		const key = req.body.path.slice(1);
+		const newValue = req.body.value;
+		businesses[businessID][key] = newValue;
+	}
+});
+
 app.get("/", (req, res, next) => {
 	res.status(200).send();
 });
 
 app.get("/businesses", (req, res) => {
 	res.status(200).send(businesses);
+});
+
+app.get("/businesses/:id", (req, res) => {
+	const businessID = req.params.id;
+	console.log(`Validating GET request to /businesses/${businessID}`);
+	const businessEvaluated = businesses[businessID];
+	if (businessEvaluated != null) {
+		console.log("GET request accepted");
+		res.status(200).send(businessEvaluated);
+	}
+	else {
+		res.status(404).send({"error": "business not found"});
+	}
 });
 
 app.get("/businesses/:id/reviews", (req, res) => {
