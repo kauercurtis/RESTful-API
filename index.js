@@ -97,7 +97,7 @@ app.delete("businesses/:id/photos/:photoid", (req, res) => {
 	const businessID = req.params.id;
 	const photoID = req.params.photoid;
 	console.log(`Validating DELETE request to /businesses/${businessID}/photos/${photoID}`);
-	const photoEvaluated = businesses[businessID]["photos][photoID];
+	const photoEvaluated = businesses[businessID]["photos"][photoID];
 	if ((businesses[businessID] != null) && (reviewEvaluated != null)) {
 		console.log("DELETE request accepted");
 		businesses[businessID]["photos"].splice(photoID, photoID);
@@ -106,7 +106,7 @@ app.delete("businesses/:id/photos/:photoid", (req, res) => {
 	else {
 		res.status(404).send({"error": "business or photo not found"});
 	}
-}
+});
 
 app.get("/", (req, res, next) => {
 	res.status(200).send();
@@ -174,7 +174,7 @@ app.get("/businesses/:id/photos/:photoid", (req, res) => {
 	const photoID = req.params.photoid;
 	console.log(`Validating GET request to /businesses/${businessID}/photos/${photoID}`);
 	const photoEvaluated = businesses[businessID]["photos"][photoID];
-	if ((businesses[businessID != null) && (photoEvaluated != null)) {
+	if ((businesses[businessID] != null) && (photoEvaluated != null)) {
 		console.log("GET request accepted");
 		res.status(200).send(photoEvaluated);
 	}

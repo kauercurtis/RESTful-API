@@ -26,11 +26,11 @@ function checkBodySize(requestBody, maximumSize, minimumSize) {
 
 function checkBodyContent(requestBody, possibleKeys) {
 	const keys = Object.keys(requestBody);
-	keys.forEach (key) {
+	keys.forEach((key) =>  {
 		if (!possibleKeys.includes(key)) {
 			return false;
 		}
-	}
+	});
 	return true;
 }
 
@@ -48,12 +48,12 @@ function checkPatch(req, res, next) {
 		next();
 	}
 	else {
-		res.status(400.send({"error": "required key(s) mismatch"});
+		res.status(400).send({"error": "required key(s) mismatch"});
 	}
 }
 
 function checkBusiness(req, res, next) {
-	if (checkBodySize(req.body, 10, 8) && checkBodyContent(req.body, BUSINESS_KEYS) && req.body.name && req.body.streetAddress && req.body.city && req.body.state && req.body.zip && req.body.phone && req.body.category && checkSubCategories(req.body.subCategories) {
+	if (checkBodySize(req.body, 10, 8) && checkBodyContent(req.body, BUSINESS_KEYS) && req.body.name && req.body.streetAddress && req.body.city && req.body.state && req.body.zip && req.body.phone && req.body.category && checkSubCategories(req.body.subCategories)) {
 		next();
 	} 
 	else {
