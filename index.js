@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const { checkContentType, checkBusiness, checkReview } = require('./middleware');
+const { checkContentType, checkBusiness, checkReview, checkPhoto } = require('./middleware');
 const { generateUniqueId } = require('./hash');
 
 const port = 8086;
@@ -19,7 +19,33 @@ app.get("/", (req, res, next) => {
 
 app.get("/businesses", (req, res) => {
 	res.status(200).send(businesses);
-}); 
+});
+
+app.get("/businesses/:id/reviews", (req, res) => {
+	const businessID = req.params.id;
+	console.log(`Validating GET request to /businesses/${businessID}/reviews`);
+	const businessEvaluated = businesses[businessID];
+	if (businessEvaluated != null) {
+		console.log("GET request accepted");
+		res.status(200).send(businessEvaluated["reviews"]);
+	}
+	else {
+		res.status(404).send({"error": "business not found"});
+	}
+});
+
+app.get("/businesses/:id/photos", (req, res) => {
+	const businessID = req.params.id;
+	console.log(`Validating GET request to /businesses/${businessID}/reviews`);
+	const businessEvaluated = businesses[businessID];
+	if (businessEvaluated != null) {
+		console.log("GET request accepted");
+		res.status(200).send(businessEvaluated["photos"]);
+	}
+	else {
+		res.status(404).send({"error": "business not found"});
+	}
+});
 
 app.get("/businesses/:id/reviews/:reviewid", (req, res) => {
 	const businessID = req.params.id;
@@ -32,6 +58,20 @@ app.get("/businesses/:id/reviews/:reviewid", (req, res) => {
 	}
 	else {
 		res.status(404).send({"error": "business or review not found"});
+	}
+});
+
+app.get("/businesses/:id/photos/:photoid", (req, res) => {
+	const businessID = req.params.id;
+	const photoID = req.params.photoid;
+	console.log(`Validating GET request to /businesses/${businessID}/photos/${photoID}`);
+	const photoEvaluated = businesses[businessID]["photos"][photoID];
+	if ((businesses[businessID != null) && photoEvaluated != null)) {
+		console.log("GET request accepted");
+		res.status(200).send(photoEvaluated);
+	}
+	else {
+		res.status(404).send({"error": "business or photo not found"});
 	}
 });
 
@@ -63,11 +103,11 @@ app.post("/businesses/:id/reviews", checkContentType, checkReview, (req, res, ne
 		res.status(201).send({"links": {"review": `businesses/${businessID}/reviews/${id}`}});
 	}
 	else {
-		res.status(404).send({"error": "id not found"});
+		res.status(404).send({"error": "business not found"});
 	}
 });
 
-app.post("/businesses/:id/photos", (req, res, next) => {
+app.post("/businesses/:id/photos",checkContentType, checkPhoto, (req, res, next) => {
 	const businessID = req.params.id;
 	if (businesses[businessID] != null) {
 		const newPhoto = JSON.stringify(req.body);
@@ -80,6 +120,6 @@ app.post("/businesses/:id/photos", (req, res, next) => {
 		res.status(201).send({"links": {"photo": `businesses/${businessID}/photos/${id}`}});
 	}
 	else {
-		res.status(404).send({"error": "id not found"});
+		res.status(404).send({"error": "business not found"});
 	}
 });

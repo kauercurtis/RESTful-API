@@ -38,7 +38,16 @@ function checkBusiness(req, res, next) {
 }
 
 function checkReview(req, res, next) {
-	if (req.body.starRating && req.body.dollarRating) {
+	if (checkBodySize(req.body, 2), req.body.starRating && req.body.dollarRating) {
+		next();
+	}
+	else {
+		res.status(400).send({"error": "missing required key(s)"});
+	}
+}
+
+function checkPhoto(req, res, next) {
+	if (req.body.url && req.body.caption) {
 		next();
 	}
 	else {
@@ -49,5 +58,6 @@ function checkReview(req, res, next) {
 module.exports = {
 	checkContentType,
 	checkBusiness,
-	checkReview
+	checkReview,
+	checkPhoto
 }
