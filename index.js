@@ -182,21 +182,21 @@ app.get("/businesses/:id/photos/:photoid", (req, res) => {
 });
 
 app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) => {
-	let newBusiness = JSON.stringify(req.body);
-	console.log(`Adding to /businesses: ${newBusiness}`);
+	req.body.website = req.body.website ? req.body.website : "";
+	req.body.email = req.body.email ? req.body.email : "";
+	req.body.reviews = {};
+	req.body.photos = {};
+	console.log(`Adding to /businesses: ${req.body.name}`);
 	console.log('Generating new id');
 	const id = await generateUniqueId(req.body);
 	console.log(`Id generated: ${id}`);
-	newBusiness.id = id;
-	newBusiness.website = req.body.website ? req.body.website : "";
-	newBusiness.email = req.body.email ? req.body.email : "";
-	newBusiness.reviews = {};
-	newBusiness.photos = {};
+	req.body.id = id;
+	let newBusiness = JSON.stringify(req.body);
 	businesses[id] = newBusiness;
 	res.status(201).send({"links": {"business": `/businesses/${id}`}});
 });
 
-app.post("/businesses/:id/reviews", checkContentType, checkReview, (req, res, next) => {
+app.post("/businesses/:id/reviews", checkContentType, checkReview, async (req, res, next) => {
 	const businessID = req.params.id;
 	if (businesses[businessID] != null) {
 		let newReview = JSON.stringify(req.body);
@@ -214,13 +214,13 @@ app.post("/businesses/:id/reviews", checkContentType, checkReview, (req, res, ne
 	}
 });
 
-app.post("/businesses/:id/photos",checkContentType, checkPhoto, (req, res, next) => {
+app.post("/businesses/:id/photos",checkContentType, checkPhoto, async (req, res, next) => {
 	const businessID = req.params.id;
 	if (businesses[businessID] != null) {
 		let newPhoto = JSON.stringify(req.body);
 		console.log(`Adding to /businesses/${businessID}/photos: ${newPhoto}`);
 		console.log('Generating new id');
-		const id = generateUniqueId(req.body);
+		const id = await generateUniqueId(req.body);
 		console.log(`Id generated: ${id}`);
 		newPhoto.id = id;
 		newPhoto.links = {"business": `/businesses/${businessID}`};
