@@ -36,9 +36,8 @@ app.patch("/businesses/:id/reviews/:reviewid", checkContentType, checkPatch, (re
 	const reviewEvaluated = businesses[businessID]["reviews"][reviewID];
 	if ((businesses[businessID] != null) && (reviewEvaluated != null)) {
 		console.log("PATCH request accepted");
-		const key = req.body.path.slice(1);
 		const newValue = req.body.value;
-		businesses[businessID][key] = newValue;
+		businesses[businessID]["reviews"][reviewID] = newValue;
 		res.status(204).send({"links": {"review": `businesses/${businessID}/reviews/${reviewID}`}});
 	}
 	else {
@@ -50,12 +49,11 @@ app.patch("/businesses/:id/photos/:photoid", checkContentType, checkPatch, (req,
 	const businessID = req.params.id;
 	const photoID = req.params.photoid;
 	console.log(`Validating PATCH request to /businesses/${businessID}/photos/${photoID}`);
-	const photoEvaluated = businesses[businessID]["photos"][reviewID];
+	const photoEvaluated = businesses[businessID]["photos"][photoID];
 	if ((businesses[businessID] != null) && (photoEvaluated != null)) {
 		console.log("PATCH request accepted");
-		const key = req.body.path.slice(1);
 		const newValue = req.body.value;
-		businesses[businessID][key] = newValue;
+		businesses[businessID]["photos"][photoID] = newValue;
 		res.status(204).send({"links": {"photo": `businesses/${businessID}/photos/${photoID}`}});
 	}
 	else {
@@ -84,7 +82,7 @@ app.delete("/businesses/:id/reviews/:reviewid", (req, res) => {
         const reviewEvaluated = businesses[businessID]["reviews"][reviewID];
         if ((businesses[businessID] != null) && (reviewEvaluated != null)) {
                 console.log("DELETE request accepted");
-                businesses[businessID]["reviews"].splice(reviewID, reviewID);
+                businesses[businessID]["reviews"].delete(reviewID);
 		res.status(204).send();
         }
         else {
@@ -100,7 +98,7 @@ app.delete("businesses/:id/photos/:photoid", (req, res) => {
 	const photoEvaluated = businesses[businessID]["photos"][photoID];
 	if ((businesses[businessID] != null) && (reviewEvaluated != null)) {
 		console.log("DELETE request accepted");
-		businesses[businessID]["photos"].splice(photoID, photoID);
+		businesses[businessID]["photos"].delete(photoID);
 		res.status(204).send();
 	}
 	else {
@@ -192,8 +190,8 @@ app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) 
 	newBusiness.id = id;
 	newBusiness.website = req.body.website ? req.body.website : "";
 	newBusiness.email = req.body.email ? req.body.email : "";
-	newBusiness.reviews = [];
-	newBusiness.photos = [];
+	newBusiness.reviews = {};
+	newBusiness.photos = {};
 	businesses[id] = newBusiness;
 	res.status(201).send({"links": {"business": `/businesses/${id}`}});
 });
@@ -204,7 +202,7 @@ app.post("/businesses/:id/reviews", checkContentType, checkReview, (req, res, ne
 		let newReview = JSON.stringify(req.body);
 		console.log(`Adding to /businesses/${businessID}/reviews: ${newReview}`);
 		console.log('Generating new id');
-		const id = businesses[businessID]["reviews"].length
+		const id = await generateUniqueId(req.body);
 		console.log(`Id generated: ${id}`);
 		newReview.id = id;
 		newReview.links = {"business": `/businesses/${businessID}`};
@@ -222,7 +220,7 @@ app.post("/businesses/:id/photos",checkContentType, checkPhoto, (req, res, next)
 		let newPhoto = JSON.stringify(req.body);
 		console.log(`Adding to /businesses/${businessID}/photos: ${newPhoto}`);
 		console.log('Generating new id');
-		const id = businesses[businessID]["photos"].length
+		const id = generateUniqueId(req.body);
 		console.log(`Id generated: ${id}`);
 		newPhoto.id = id;
 		newPhoto.links = {"business": `/businesses/${businessID}`};
