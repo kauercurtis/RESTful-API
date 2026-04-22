@@ -3,6 +3,6 @@ Restful API for CS493 Cloud Development.
 
 ## To Run
 
-`npm install` - install dependencies
+`docker build -t api-server .` - build docker container
 
-`npm start` - to start the server
+`sudo docker run -p 8086:8086 api-server` - to start the server

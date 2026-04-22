@@ -5,7 +5,6 @@
 ```json
 
 {
-	"id": int,
 	"name": string,
 	"streetAddress": string,
 	"city": string,
@@ -18,8 +17,9 @@
 	"website": string (optional),
 	"email": string (optional),
 
-	"reviews": string [],
-	"photos": string []
+	"reviews": string {},
+	"photos": string {},
+	"id": string
 }
 ```
 
@@ -27,13 +27,13 @@
 
 ```json
 {
-	"id": int,
 	"starRating": int,
 	"dollarRating": int,
 	"writtenReview": string (optional),
 	"links": {
 		"business": "/businesses/:id"
-	}
+	},
+	"id": string
 }
 
 ```
@@ -41,9 +41,12 @@
 ### Photo JSON Scheme
 
 ```json
-	"id": int,
 	"caption": string
 	"url": string
+	"links": {
+		"business": "/busineses/:id
+	}
+	"id": string
 ```
 
 ### API POST Operations

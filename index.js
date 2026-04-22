@@ -17,7 +17,7 @@ app.patch("/businesses/:id", checkContentType, checkPatch, (req, res, next) => {
 	const businessID = req.params.id;
 	console.log(`Validating PATCH request to /businesses/${businessID}`);
 	const businessEvaluated = businesses[businessID];
-	if (businessEvaluated != null) {
+	if (businessEvaluated) {
 		console.log("PATCH request accepted");
 		const key = req.body.path.slice(1);
 		const newValue = req.body.value;
@@ -157,8 +157,10 @@ app.get("/businesses/:id/reviews/:reviewid", (req, res) => {
 	const businessID = req.params.id;
 	const reviewID = req.params.reviewid; 
 	console.log(`Validating GET request to /businesses/${businessID}/reviews/${reviewID}`);
-	const reviewEvaluated = businesses[businessID]["reviews"][reviewID];
-	if ((businesses[businessID] != null) && (reviewEvaluated != null)) {
+	const business = businesses[businessID];
+	const reviewEvaluated = business.reviews.get(reviewID);
+	console.log(reviewEvaluated);
+	if (reviewEvaluated) {
 		console.log("GET request accepted");
 		res.status(200).send(reviewEvaluated);
 	}
@@ -171,8 +173,9 @@ app.get("/businesses/:id/photos/:photoid", (req, res) => {
 	const businessID = req.params.id;
 	const photoID = req.params.photoid;
 	console.log(`Validating GET request to /businesses/${businessID}/photos/${photoID}`);
-	const photoEvaluated = businesses[businessID]["photos"][photoID];
-	if ((businesses[businessID] != null) && (photoEvaluated != null)) {
+	const business = businesses[businessID]
+	const photoEvaluated = business.photos.get(photoID);
+	if (photoEvaluated) {
 		console.log("GET request accepted");
 		res.status(200).send(photoEvaluated);
 	}
@@ -184,29 +187,28 @@ app.get("/businesses/:id/photos/:photoid", (req, res) => {
 app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) => {
 	req.body.website = req.body.website ? req.body.website : "";
 	req.body.email = req.body.email ? req.body.email : "";
-	req.body.reviews = {};
-	req.body.photos = {};
+	req.body.reviews = new Map();
+	req.body.photos = new Map();
 	console.log(`Adding to /businesses: ${req.body.name}`);
 	console.log('Generating new id');
 	const id = await generateUniqueId(req.body);
 	console.log(`Id generated: ${id}`);
 	req.body.id = id;
-	let newBusiness = JSON.stringify(req.body);
-	businesses[id] = newBusiness;
+	businesses[id] = req.body;
 	res.status(201).send({"links": {"business": `/businesses/${id}`}});
 });
 
 app.post("/businesses/:id/reviews", checkContentType, checkReview, async (req, res, next) => {
 	const businessID = req.params.id;
-	if (businesses[businessID] != null) {
-		let newReview = JSON.stringify(req.body);
-		console.log(`Adding to /businesses/${businessID}/reviews: ${newReview}`);
+	console.log(businesses[businessID]);
+	if (businesses[businessID]) {
 		console.log('Generating new id');
 		const id = await generateUniqueId(req.body);
 		console.log(`Id generated: ${id}`);
-		newReview.id = id;
-		newReview.links = {"business": `/businesses/${businessID}`};
-		businesses[businessID]["reviews"][id] = newReview;
+		req.body.links = {"business": `/businesses/${businessID}`};
+		req.body.id = id;
+		console.log(`Adding to /businesses/${businessID}/reviews: ${req.body}`);
+		businesses[businessID].reviews.set(id, req.body);
 		res.status(201).send({"links": {"review": `businesses/${businessID}/reviews/${id}`}});
 	}
 	else {
@@ -217,14 +219,13 @@ app.post("/businesses/:id/reviews", checkContentType, checkReview, async (req, r
 app.post("/businesses/:id/photos",checkContentType, checkPhoto, async (req, res, next) => {
 	const businessID = req.params.id;
 	if (businesses[businessID] != null) {
-		let newPhoto = JSON.stringify(req.body);
-		console.log(`Adding to /businesses/${businessID}/photos: ${newPhoto}`);
 		console.log('Generating new id');
 		const id = await generateUniqueId(req.body);
 		console.log(`Id generated: ${id}`);
-		newPhoto.id = id;
-		newPhoto.links = {"business": `/businesses/${businessID}`};
-		businesses[businessID]["photos"][id] = newPhoto;
+		req.body.links = {"business": `/businesses/${businessID}`};
+		req.body.id = id;
+		console.log(`Adding to /businesses/${businessID}/photos: ${req.body}`);
+		businesses[businessID].photos.set(id, req.body);
 		res.status(201).send({"links": {"photo": `businesses/${businessID}/photos/${id}`}});
 	}
 	else {
