@@ -19,10 +19,15 @@ app.patch("/businesses/:id", checkContentType, checkPatch, (req, res, next) => {
 	const businessEvaluated = businesses[businessID];
 	if (businessEvaluated) {
 		console.log("PATCH request accepted");
-		const key = req.body.path.slice(1);
-		const newValue = req.body.value;
+		const body = req.body[0];
+		console.log(body);
+		const key = body.path.slice(1);
+		console.log(key)
+		const newValue = body.value;
+		console.log(newValue);
 		businesses[businessID][key] = newValue;
-		res.status(204).send({"links": {"business": `/businesses/${businessID}`}});
+		console.log(businesses[businessID][key]);
+		res.status(201).send({"links": {"business": 'businesses/${businessID}'}});
 	}
 	else {
 		res.status(404).send({"error": "business not found"});

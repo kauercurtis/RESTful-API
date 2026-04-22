@@ -44,7 +44,8 @@ function checkSubCategories(subCategories) {
 }
 
 function checkPatch(req, res, next) {
-	if (checkBodySize(req.body, 3, 3) && checkBodyContent(req.body, PATCH_KEYS) && req.body.op && req.body.path && req.body.value) {
+	const body = req.body[0];
+	if (checkBodySize(body, 3, 3) && checkBodyContent(body, PATCH_KEYS) && body.op && body.path && body.value) {
 		next();
 	}
 	else {

@@ -16,8 +16,6 @@ status() {
     printf -- "-----------------------------------------------------\n"
 }
 
-# /businesses POST endpoint basic tests for required keys
-
 request_json "POST /businesses with all valid keys should return 201 success with only required keys" POST $URL/businesses '{
 		"name": "The foobar", "streetAddress": "123 vanilla dr.", "city": "Denver", "state": "colorado", "zip": "1234567", "phone": "834-234-9090", "category": "bar", "subCategories": ["drink", "food"]
 	}' \
@@ -33,19 +31,12 @@ request_json "GET $FIRST_PATH should return 200 success" \
 	200 \
 	'{"name": ".*", "streetAddress": ".*", "city": ".*", "state": ".*", "zip": ".*", "phone": ".*", "category": ".*", "subcategories": \[.*\], "website": ".*", "email": ".*", "reviews": \{.*\}, "photos": \{.*\}, "id": ".*"}'
 
-# request_json "PATCH $FIRST_PATH should return 204 changing name" \
-#	"PATCH" \
-#	 "${URL}${FIRST_PATH}" \
-#	 '[{
-#		"op": "replace" , "path": "/name", "value": "new name"
-#	}]' \
-#	204 \
-
-
-request_json "POST ${FIRST_PATH}/reviews should return 201 success with only required keys" POST "${URL}${FIRST_PATH}/reviews" '{
-		"starRating": 4, "dollarRating": 5
-	}' \
-	201 '{"links": {"review": "${FIRST_PATH}/reviews/.*"}}'
+request_json "POST ${FIRST_PATH}/reviews should return 201 success with only required keys" \
+        "POST" \
+        "${URL}${FIRST_PATH}/reviews" \
+        '{"starRating": 4, "dollarRating": 5}' \
+        201 \
+        '{"links": {"review": "${FIRST_PATH}/.*"}}'
 
 REVIEW_PATH=$(jq_query '.links.review' | tr -d '""')
 request_json "GET ${REVIEW_PATH} should return 200 success" \
@@ -124,6 +115,14 @@ curl -X POST -H 'Content-Type: application/json' \
 
 # /businesses/id/reviews POST endpoint basic tests for required keys
 
+request_json "PATCH $FIRST_PATH should return 201 changing name" \
+        "PATCH" \
+         "${URL}${FIRST_PATH}" \
+         '[{
+                "op": "replace" , "path": "/name", "value": "new name"
+        }]' \
+        201 \
+        '{"links": {"business": "/businesses/.*"}}'
 
 
 
