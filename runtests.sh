@@ -113,7 +113,7 @@ curl -X POST -H 'Content-Type: application/json' \
 	-d '{"name": "",  "streetAddress": "123 vanilla dr.", "city": "Denver", "state": "colorado", "zip": "1234567", "phone": "834-234-9090", "category": "bar", "subCategories": ["drink", "food"]}' \
 	http://localhost:8086/businesses
 
-# /businesses/id/reviews POST endpoint basic tests for required keys
+# PATCH tests
 
 request_json "PATCH $FIRST_PATH should return 201 changing name" \
         "PATCH" \
@@ -124,7 +124,7 @@ request_json "PATCH $FIRST_PATH should return 201 changing name" \
         201 \
         '{"links": {"business": "/businesses/.*"}}'
 
-
+# TODO: PATCH test for reviews and DELETE test for businesses
 
 
 

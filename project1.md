@@ -1,5 +1,24 @@
 ## JSON Schemes
 
+### Pages Data Structure
+```json
+{
+	"totalPages": int,
+	"maxPageSize": int,
+	"pages": [Page {}, Page {}, ...]
+}
+```
+
+### Page Data Structure
+
+```json
+{
+	"pageNumber": int,
+	"pageSize": int,
+	":dataType(businesses, reviews, ect)": [dataType {}, dataType {}, ...]
+}
+```
+
 ### Business JSON Scheme
 
 ```json
@@ -17,8 +36,8 @@
 	"website": string (optional),
 	"email": string (optional),
 
-	"reviews": string {},
-	"photos": string {},
+	"reviews": Page {},
+	"photos": Page {},
 	"id": string
 }
 ```
@@ -119,6 +138,10 @@ Request Body: -
 Response Body: 
 ```json
 {
+	"pageNumber": int,
+	"totalPages": int,
+	"pageSize": int,
+	"totalCount": int,
 	"businesses": [
 		{
 			"id": 1234,
@@ -131,14 +154,39 @@ Response Body:
 			...
 		}
 	]
+	"links": {
+		"nextPage": "/businesses?page=:nextPageNumber",
+		"lastPage": "/businesses?page=:lastPageNumber"
+	}
 }
 ```
 
-Request: 'GET /businesses/:businessID/reviews/:reviewID'
+Request: 'GET /businesses/:businessID/photos'
+Request Body: -
+Response Body:
+```json
+{
+	"pageNumber": int,
+	"totalPages": int,
+	"pageSize": int,
+	"totalCount": 
+	"photos": [
+		{
+			
+		}
+	]
+}
+```
+
+Request: 'GET /businesses/:businessID/reviews'
 Request Body: - 
 Response Body:
 ```json
 {
+	"pageNumber": int,
+	"totalPages": int,
+	"pageSize": int,
+	"totalCount": 
 	"reviews": [
 		{
 			
