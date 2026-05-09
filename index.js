@@ -2,10 +2,13 @@ const express = require('express');
 const app = express();
 const { checkContentType, checkBusiness, checkReview, checkPhoto, checkPatch } = require('./middleware');
 const { generateUniqueId } = require('./hash');
+const { getNewPage } = require('./page');
 
 const port = 8086;
 
 let businesses = new Map();
+
+const PAGE_SIZE_LIMIT = 10;
 
 app.use(express.json());
 
@@ -160,7 +163,7 @@ app.get("/businesses/:id/photos", (req, res) => {
 
 app.get("/businesses/:id/reviews/:reviewid", (req, res) => {
 	const businessID = req.params.id;
-	const reviewID = req.params.reviewid; 
+	const reviewID = req.params.reviewid;
 	console.log(`Validating GET request to /businesses/${businessID}/reviews/${reviewID}`);
 	const business = businesses[businessID];
 	const reviewEvaluated = business.reviews.get(reviewID);
@@ -199,7 +202,30 @@ app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) 
 	const id = await generateUniqueId(req.body);
 	console.log(`Id generated: ${id}`);
 	req.body.id = id;
-	businesses[id] = req.body;
+
+	const pageNumber = businesses.keys().length;
+	console.log(`Pages number: ${pageNumber}`);
+	if (pageNumber === undefined) {
+		let page = getNewPage(1);
+		page["pageSize"] = 1;
+		page["data"][id] = req.body;
+		console.log("No pages exist, creating first page");
+		businesses["page1"] = page;
+	}
+	else if (businesses[`page${pageNumber}`].pageSize === PAGE_SIZE_LIMIT) {
+		const newPageNum = pageNumber + 1;
+		let page = getNewPage(newPageNum);
+		page["pageSize"] = 1;
+		page["data"][id] = req.body;
+		console.log(`page added: ${newPageNum}`);
+		businesses[`page${newPageNum}`] = page;
+	}
+	else {
+		console.log(`Adding to existing page: ${pageNumber}`);
+		businesses[`page${pageNumber}`].pageSize += 1;
+		businesses[`page${pageNumber}`].data[id] = req.body;
+	}
+
 	res.status(201).send({"links": {"business": `/businesses/${id}`}});
 });
 
