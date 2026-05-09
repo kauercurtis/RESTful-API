@@ -7,6 +7,7 @@ const { getNewPage } = require('./page');
 const port = 8086;
 
 let businesses = new Map();
+let lookupTable = new Map();
 
 const PAGE_SIZE_LIMIT = 10;
 
@@ -211,6 +212,7 @@ app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) 
 		page["data"][id] = req.body;
 		console.log("No pages exist, creating first page");
 		businesses["page1"] = page;
+		lookupTable[id] = "page1";
 	}
 	else if (businesses[`page${pageNumber}`].pageSize === PAGE_SIZE_LIMIT) {
 		const newPageNum = pageNumber + 1;
@@ -219,11 +221,13 @@ app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) 
 		page["data"][id] = req.body;
 		console.log(`page added: ${newPageNum}`);
 		businesses[`page${newPageNum}`] = page;
+		lookupTable[id] = `page${newPageNum}`;
 	}
 	else {
 		console.log(`Adding to existing page: ${pageNumber}`);
 		businesses[`page${pageNumber}`].pageSize += 1;
 		businesses[`page${pageNumber}`].data[id] = req.body;
+		lookupTable[id] = `page${pageNumber}`;
 	}
 
 	res.status(201).send({"links": {"business": `/businesses/${id}`}});
