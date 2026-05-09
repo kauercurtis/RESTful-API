@@ -23,6 +23,13 @@ request_json "POST /businesses with all valid keys should return 201 success wit
 NEW_PATH=$(jq_query '.links.business' | tr -d '""')
 BUSINESS_PATHS="$BUSINESS_PATHS $NEW_PATH"
 
+request_json "GET /businesses should return 200 success" \
+	"GET" \
+	$URL/businesses \
+	"" \
+	200 \
+	'{"totalPages": 1, "page": ".*", "links": ".*"}'
+
 FIRST_PATH=$(echo $BUSINESS_PATHS | awk '{print $1}')
 request_json "GET $FIRST_PATH should return 200 success" \
 	"GET" \
@@ -37,6 +44,13 @@ request_json "POST ${FIRST_PATH}/reviews should return 201 success with only req
         '{"starRating": 4, "dollarRating": 5}' \
         201 \
         '{"links": {"review": "${FIRST_PATH}/.*"}}'
+
+request_json "GET ${FIRST_PATH}/reviews should return 200 success" \
+	"GET" \
+	"${URL}${FIRST_PATH}/reviews" \
+	"" \
+	200 \
+	'{"totalPages": 1, "page": ".*", "links": ".*"}'
 
 REVIEW_PATH=$(jq_query '.links.review' | tr -d '""')
 request_json "GET ${REVIEW_PATH} should return 200 success" \

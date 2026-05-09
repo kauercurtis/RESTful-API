@@ -120,16 +120,27 @@ app.get("/", (req, res, next) => {
 });
 
 app.get("/businesses", (req, res) => {
-	res.status(200).send(businesses);
+	let response = {};
+	if (businesses["page1"]) {
+		response = {
+			"totalPages": businesses.keys().length,
+			"page": businesses["page1"],
+			"links": {
+				"nextPage": businesses["page2"] ? "/businesses?page=page2" : "N/A",
+				"lastPage": `/businesses?page=page${businesses.keys().length}`
+			}
+		};
+	}
+	res.status(200).send(response);
 });
 
 app.get("/businesses/:id", (req, res) => {
 	const businessID = req.params.id;
 	console.log(`Validating GET request to /businesses/${businessID}`);
-	const businessEvaluated = businesses[businessID];
-	if (businessEvaluated != null) {
+	const pageFound = lookupTable[businessID];
+	if (pageFound) {
 		console.log("GET request accepted");
-		res.status(200).send(businessEvaluated);
+		res.status(200).send(businesses[pageFound].data[businessID]);
 	}
 	else {
 		res.status(404).send({"error": "business not found"});
@@ -139,10 +150,18 @@ app.get("/businesses/:id", (req, res) => {
 app.get("/businesses/:id/reviews", (req, res) => {
 	const businessID = req.params.id;
 	console.log(`Validating GET request to /businesses/${businessID}/reviews`);
-	const businessEvaluated = businesses[businessID];
-	if (businessEvaluated != null) {
+	const pageFound = lookupTable[businessID];
+	if (pageFound) {
 		console.log("GET request accepted");
-		res.status(200).send(businessEvaluated["reviews"]);
+		const response = {
+			"totalPages": businesses[pageFound].data[businessID].reviews.keys().length,
+			"page": businesses[pageFound].data[businessID].reviews["page1"],
+			"links": {
+				"nextPage": businesses[pageFound].data[businessID].reviews["page2"] ? `/businesses/${businessID}/reviews?page=page2` : "N/A", 
+				"lastPage": `/businesses/${businessID}/reviews?page=page${businesses[pageFound].data[businessID].reviews.keys().length}`
+			}
+		};
+		res.status(200).send(response);
 	}
 	else {
 		res.status(404).send({"error": "business not found"});
@@ -235,15 +254,36 @@ app.post("/businesses", checkContentType, checkBusiness, async (req, res, next) 
 
 app.post("/businesses/:id/reviews", checkContentType, checkReview, async (req, res, next) => {
 	const businessID = req.params.id;
-	console.log(businesses[businessID]);
-	if (businesses[businessID]) {
+	const pageFound = lookupTable[businessID];
+	if (pageFound) {
 		console.log('Generating new id');
 		const id = await generateUniqueId(req.body);
 		console.log(`Id generated: ${id}`);
 		req.body.links = {"business": `/businesses/${businessID}`};
 		req.body.id = id;
 		console.log(`Adding to /businesses/${businessID}/reviews: ${req.body}`);
-		businesses[businessID].reviews.set(id, req.body);
+
+		const pageNumber = businesses[pageFound].data[businessID].reviews.keys().length;
+		if (pageNumber === undefined) {
+			let page = getNewPage(1);
+			page["pageSize"] = 1;
+			page["data"][id] = req.body;
+			console.log("No pages exist, creating first page");
+			businesses[pageFound].data[businessID].reviews["page1"] = page;
+		}
+		else if (businesses[pageFound].data[businessID].reviews[pageNumber].pageSize === PAGE_SIZE_LIMIT) {
+			const newPageNum = pageNumber + 1;
+			let page = getNewPage(newPageNum);
+			page["pageSize"] = 1;
+			page["data"][id] = req.body;
+			console.log(`page added: ${newPageNum}`);
+			businesses[pageFound].data[businessID].reviews[`page${newPageNumber}`] = page;
+		}
+		else {
+			console.log(`Adding to existing page: ${pageNumber}`);
+			businesses[pageFound].data[businessID].reviews[pageNumber].pageSize += 1;
+			businesses[pageFound].data[businessID].reviews[pageNumber].data[id] = req.body;
+		}
 		res.status(201).send({"links": {"review": `businesses/${businessID}/reviews/${id}`}});
 	}
 	else {
@@ -253,14 +293,36 @@ app.post("/businesses/:id/reviews", checkContentType, checkReview, async (req, r
 
 app.post("/businesses/:id/photos",checkContentType, checkPhoto, async (req, res, next) => {
 	const businessID = req.params.id;
-	if (businesses[businessID] != null) {
+	const pageFound = lookupTable[businessID];
+	if (pageFound) {
 		console.log('Generating new id');
 		const id = await generateUniqueId(req.body);
 		console.log(`Id generated: ${id}`);
 		req.body.links = {"business": `/businesses/${businessID}`};
 		req.body.id = id;
 		console.log(`Adding to /businesses/${businessID}/photos: ${req.body}`);
-		businesses[businessID].photos.set(id, req.body);
+		// businesses[businessID].photos.set(id, req.body);
+		const pageNumber = businesses[pageFound].data[businessID].photos.keys().length;
+		if (pageNumber === undefined) {
+			let page = getNewPage(1);
+			page["pageSize"] = 1;
+			page["data"][id] = req.body;
+			console.log("No pages exist, creating first page");
+			businesses[pageFound].data[businessID].photos["page1"] = page;
+		}
+		else if (businesses[pageFound].data[businessID].photos[pageNumber].pageSize === PAGE_SIZE_LIMIT) {
+			const newPageNum = pageNumber + 1;
+			let page = getNewPage(newPageNum);
+			page["pageSize"] = 1;
+			page["data"][id] = req.body;
+			console.log(`page added: ${newPageNum}`);
+			businesses[pageFound].data[businessID].photos[`page${newPageNumber}`] = page;
+		}
+		else {
+			console.log(`Adding to existing page: ${pageNumber}`);
+			businesses[pageFound].data[businessID].photos[pageNumber].pageSize += 1;
+			businesses[pageFound].data[businessID].photos[pageNumber].data[id] = req.body;
+		}
 		res.status(201).send({"links": {"photo": `businesses/${businessID}/photos/${id}`}});
 	}
 	else {
