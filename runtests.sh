@@ -23,6 +23,13 @@ request_json "POST /businesses with all valid keys should return 201 success wit
 NEW_PATH=$(jq_query '.links.business' | tr -d '""')
 BUSINESS_PATHS="$BUSINESS_PATHS $NEW_PATH"
 
+request_json "GET /businesses should return 200 success" \
+	"GET" \
+	$URL/businesses \
+	"" \
+	200 \
+	'{"totalPages": 1, "page": ".*", "links": ".*"}'
+
 FIRST_PATH=$(echo $BUSINESS_PATHS | awk '{print $1}')
 request_json "GET $FIRST_PATH should return 200 success" \
 	"GET" \
@@ -46,6 +53,13 @@ request_json "GET ${REVIEW_PATH} should return 200 success" \
 	200 \
 	'{"starRating": .*, "dollarRating": .*, "writtenReview": ".*", "links": \{.*\}, "id": ".*"}'
 
+request_json "GET ${FIRST_PATH}/reviews should return 200 success" \
+	"GET" \
+	"${URL}${FIRST_PATH}/reviews" \
+	"" \
+	200 \
+	'{"totalPages": 1, "page": ".*", "links": ".*"}'
+
 request_json "POST ${FIRST_PATH}/photos should return 201 success with only required keys" POST "${URL}${FIRST_PATH}/photos" '{
 		"caption": "my first experience", "url": "fjdakfja.png"
 	}' \
@@ -59,6 +73,19 @@ request_json "GET ${PHOTO_PATH} should return 200 success" \
 	200 \
 	'{"caption": ".*", "url": ".*", "links": \{.*\}, "id": ".*"}'
 
+request_json "GET ${FIRST_PATH}/photos should return 200 success" \
+	"GET" \
+	"${URL}/${PHOTO_PATH}" \
+	"" \
+	200 \
+	'{"totalPages": 1, "page": ".*", "links": ".*"}'
+
+request_json "GET /businesses?page=2 should return 200 failure" \
+	"GET" \
+	"${URL}/businesses?page=2" \
+	"" \
+	404 \
+	'{"error": "page not found"}'
 
 # POST tests for missing required keys
 request_json "POST /businesses without name key should return 400 failure" POST $URL/businesses '{
@@ -113,7 +140,7 @@ curl -X POST -H 'Content-Type: application/json' \
 	-d '{"name": "",  "streetAddress": "123 vanilla dr.", "city": "Denver", "state": "colorado", "zip": "1234567", "phone": "834-234-9090", "category": "bar", "subCategories": ["drink", "food"]}' \
 	http://localhost:8086/businesses
 
-# /businesses/id/reviews POST endpoint basic tests for required keys
+# PATCH tests
 
 request_json "PATCH $FIRST_PATH should return 201 changing name" \
         "PATCH" \
@@ -124,7 +151,7 @@ request_json "PATCH $FIRST_PATH should return 201 changing name" \
         201 \
         '{"links": {"business": "/businesses/.*"}}'
 
-
+# TODO: PATCH test for reviews and DELETE test for businesses
 
 
 
