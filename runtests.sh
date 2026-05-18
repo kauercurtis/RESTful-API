@@ -48,7 +48,7 @@ request_json "POST ${FIRST_PATH}/reviews should return 201 success with only req
 REVIEW_PATH=$(jq_query '.links.review' | tr -d '""')
 request_json "GET ${REVIEW_PATH} should return 200 success" \
 	"GET" \
-	"${URL}/${REVIEW_PATH}" \
+	"${URL}${REVIEW_PATH}" \
 	"" \
 	200 \
 	'{"starRating": .*, "dollarRating": .*, "writtenReview": ".*", "links": \{.*\}, "id": ".*"}'
@@ -68,14 +68,14 @@ request_json "POST ${FIRST_PATH}/photos should return 201 success with only requ
 PHOTO_PATH=$(jq_query '.links.photo' | tr -d '""')
 request_json "GET ${PHOTO_PATH} should return 200 success" \
 	"GET" \
-	"${URL}/${PHOTO_PATH}" \
+	"${URL}${PHOTO_PATH}" \
 	"" \
 	200 \
 	'{"caption": ".*", "url": ".*", "links": \{.*\}, "id": ".*"}'
 
 request_json "GET ${FIRST_PATH}/photos should return 200 success" \
 	"GET" \
-	"${URL}/${PHOTO_PATH}" \
+	"${URL}${PHOTO_PATH}" \
 	"" \
 	200 \
 	'{"totalPages": 1, "page": ".*", "links": ".*"}'
