@@ -103,15 +103,15 @@ request_json "POST /businesses without city  key should return 400 failure" POST
 	}' \
 	400 '{"error": "required keys mismatch"}'
 
-status 'POST /businesses without city key should return 400 failure'
-curl -X POST -H 'Content-Type: application/json' \
-	-d '{"name": "this shouldnt work avenue", "streetAddress": "Hanoi", "state": "Idaho", "zip": "123456", "phone": "345-8763452", "category": "someplace", "subCategories": ["stuff"]}' \
-	http://localhost:8086/businesses
+request_json "POST /businesses without state  key should return 400 failure" POST $URL/businesses '{
+		"name": "this shouldnt work avenue", "streetAddress": "Hanoi", "city": "someplace", "zip": "123456", "phone": "345-8763452", "category": "someplace", "subCategories": ["stuff"]
+	}' \
+	400 '{"error": "required keys mismatch"}'
 
-status 'POST /businesses without state key should return 400 failure'
-curl -X POST -H 'Content-Type: application/json' \
-	-d '{"name": "this shouldnt work avenue", "streetAddress": "Hanoi", "city": "Idaho", "zip": "123456", "phone": "345-8763452", "category": "someplace", "subCategories": ["stuff"]}' \
-	http://localhost:8086/businesses
+request_json "POST /businesses without zip  key should return 400 failure" POST $URL/businesses '{
+		"name": "this shouldnt work avenue", "streetAddress": "Hanoi", "city": "someplace", "state": "ks", "phone": "345-8763452", "category": "someplace", "subCategories": ["stuff"]
+	}' \
+	400 '{"error": "required keys mismatch"}'
 
 status 'POST /businesses without zip key should return 400 failure'
 curl -X POST -H 'Content-Type: application/json' \
@@ -151,31 +151,43 @@ request_json "PATCH $FIRST_PATH should return 201 changing name" \
         201 \
         '{"links": {"business": "/businesses/.*"}}'
 
-# TODO: PATCH test for reviews and DELETE test for businesses
+request_json "PATCH $REVIEW_PATH should return 201 changing starRating" \
+        "PATCH" \
+         "${URL}${REVIEW_PATH}" \
+         '[{
+                "op": "replace" , "path": "/starRating", "value": 2
+        }]' \
+        201 \
+        '{"links": {"review": "/businesses/.*"}}'
 
+request_json "PATCH $PHOTO_PATH should return 201 changing caption" \
+        "PATCH" \
+         "${URL}${PHOTO_PATH}" \
+         '[{
+                "op": "replace" , "path": "/caption", "value": "take a load of this place"
+        }]' \
+        201 \
+        '{"links": {"photo": "/businesses/.*"}}'
 
+# DELETE tests
 
+request_json "DELETE $PHOTO_PATH should return 204" \
+        "DELETE" \
+         "${URL}${PHOTO_PATH}" \
+        "" \
+	204 \
+        '{}'
 
+request_json "DELETE $REVIEW_PATH should return 204" \
+        "DELETE" \
+         "${URL}${REVIEW_PATH}" \
+        "" \
+	204 \
+        '{}'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+request_json "DELETE $FIRST_PATH should return 204" \
+        "DELETE" \
+         "${URL}${FIRST_PATH}" \
+        "" \
+	204 \
+        '{}'
