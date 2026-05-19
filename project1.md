@@ -239,4 +239,14 @@ Request 'DELETE /businesses/{id}'
 Request Body: - 
 Response Body: - 
 
+Request 'DELETE /businesses/{id}/reviews/{reviewID}'
+Request Body: - 
+Response Body: - 
+
+Request 'DELETE /businesses/{id}/photos/{photoID}'
+Request Body: - 
+Response Body: - 
+
+
+
 
