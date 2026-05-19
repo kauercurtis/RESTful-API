@@ -129,7 +129,45 @@ Request Body:
 	"value": "new value"
 }
 ```
-Response Body: -
+Response Body:
+```json
+{
+	"links": "links": { "business": `/businesses/${req.params.id}` }
+}
+```
+
+Request: 'PATCH /businesses/{id}/reviews/reviewID'
+Request Body:
+```json
+{
+	"op": "replace",
+	"path": "/{variable to update}",
+	"value": "new value"
+}
+```
+Response Body:
+```json
+{
+	"links": { "review": `businesses/${businessID}/reviews/${reviewID}` }
+}
+```
+
+Request: 'PATCH /businesses/{id}/photos/photoID'
+Request Body:
+```json
+{
+	"op": "replace",
+	"path": "/{variable to update}",
+	"value": "new value"
+}
+```
+Response Body:
+```json
+{
+	"links": { "photo": `businesses/${businessID}/photos/${photoID}` }
+}
+```
+
 
 ### API GET Operations
 

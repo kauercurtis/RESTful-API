@@ -2,7 +2,6 @@ const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
 const app = express();
 const { checkContentType, checkBusiness, checkReview, checkPhoto, checkPatch } = require('./middleware');
-// REMOVED: const { generateUniqueId } = require('./hash'); // No longer needed
 const { getNewPage } = require('./page');
 
 const port = 8086;
@@ -41,7 +40,6 @@ app.patch("/businesses/:id", checkContentType, checkPatch, async (req, res, next
         } else {
             updateOps = req.body;
         }
-
         const result = await db.collection('businesses').updateOne(
             { _id: businessID },
             { $set: updateOps } 
@@ -64,7 +62,6 @@ app.patch("/businesses/:id/reviews/:reviewid", checkContentType, checkPatch, asy
     const businessID = tryCastObjectId(req.params.id);
     const reviewID = tryCastObjectId(req.params.reviewid);
     if (!businessID || !reviewID) return res.status(400).send({ "error": "Invalid ID format" });
-
     try {
         let updateOps = {};
         if (Array.isArray(req.body)) {
@@ -75,14 +72,14 @@ app.patch("/businesses/:id/reviews/:reviewid", checkContentType, checkPatch, asy
         } else {
             updateOps = req.body;
         }
-
         const result = await db.collection('reviews').updateOne(
-            { _id: reviewID, businessID: businessID }, // businessID must be parsed to ObjectId
+            { _id: reviewID, businessID: businessID },
             { $set: updateOps }
         );
-
         if (result.matchedCount === 1) {
-            res.status(201).send();
+            res.status(201).send({
+	    "links": { "review": `businesses/${businessID}/reviews/${reviewID}` }
+	});
         } else {
             res.status(404).send({ "error": "business or review not found" });
         }
@@ -114,7 +111,9 @@ app.patch("/businesses/:id/photos/:photoid", checkContentType, checkPatch, async
         );
 
         if (result.matchedCount === 1) {
-            res.status(201).send();
+            res.status(201).send({
+		"links": { "photo": `businesses/${businessID}/photos/${photoID}` }
+	});
         } else {
             res.status(404).send({ "error": "business or photo not found" });
         }
